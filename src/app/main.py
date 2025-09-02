@@ -79,11 +79,12 @@ st.markdown("""
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
     .success-box {
-        background: #d4edda;
-        border: 1px solid #c3e6cb;
+        background: #2c3e50; /* Dark background */
+        border: 1px solid #34495e; /* Slightly lighter border */
         border-radius: 8px;
         padding: 1rem;
         margin: 1rem 0;
+        color: #ecf0f1; /* White text for contrast */
     }
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
@@ -297,7 +298,7 @@ with tab1:
         
         with col1:
             st.markdown("#### Original Image")
-            st.image(image, caption=f"Original: {uploaded_file.name}", use_column_width=True)
+            st.image(image, caption=f"Original: {uploaded_file.name}", use_container_width=True)
             
             st.markdown("#### Image Information")
             st.info(f"""
@@ -310,7 +311,7 @@ with tab1:
         
         with col2:
             st.markdown("#### Enhanced Image")
-            st.image(enhanced_image, caption="Enhanced version", use_column_width=True)
+            st.image(enhanced_image, caption="Enhanced version", use_container_width=True)
             
             if st.button("🚀 Analyze Image", type="primary"):
                 if not prompt.strip():
@@ -442,7 +443,7 @@ with tab2:
                         with st.expander(f"📄 {result['filename']} ({result['processing_time']:.2f}s)"):
                             col1, col2 = st.columns([1, 2])
                             with col1:
-                                st.image(result['image'], caption=result['filename'], use_column_width=True)
+                                st.image(result['image'], caption=result['filename'], use_container_width=True)
                             with col2:
                                 st.markdown(f"""
                                 <div class="batch-result">

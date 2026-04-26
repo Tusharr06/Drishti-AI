@@ -11,6 +11,7 @@ from typing import List, Dict, Any
 import time
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 from src.services.ollama_client import OllamaVLMClient
+from src.services.gemini_client import GeminiVLMClient
 
 st.set_page_config(
     page_title="Drishti AI - Vision Intelligence", 
@@ -222,6 +223,11 @@ with st.sidebar:
             max_tokens = st.slider("Max Tokens", 32, 1024, 300, step=16)
         with col2:
             temperature = st.slider("Temperature", 0.0, 2.0, 0.2, step=0.05)
+            
+    with st.expander("🔑 API Configuration", expanded=False):
+        gemini_api_key = st.text_input("Gemini API Key", type="password", help="Enter your Google Gemini API Key")
+        if gemini_api_key:
+            os.environ["GEMINI_API_KEY"] = gemini_api_key
     
     with st.expander("✨ Image Enhancement", expanded=False):
         brightness = st.slider("Brightness", 0.5, 2.0, 1.0, step=0.1)
@@ -278,7 +284,7 @@ with st.sidebar:
             st.session_state.processing_stats = {'total_processed': 0, 'total_time': 0}
             st.rerun()
 
-tab1, tab2, tab3, tab4 = st.tabs(["🖼️ Single Image", "📊 Batch Processing", "🔍 Compare Images", "📜 History"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["🖼️ Single Image", "📊 Batch Processing", "🔍 Compare Images", "📜 History", "🌟 Celeb Guess"])
 
 with tab1:
     st.markdown("### Upload and Analyze Single Image")
@@ -599,6 +605,51 @@ with tab4:
                     st.text(analysis['prompt'])
                     st.markdown("**Result:**")
                     st.markdown(analysis['result'])
+
+with tab5:
+    st.markdown("### 🌟 Celebrity Guesser")
+    st.markdown("Upload a photo of a celebrity and Gemini will try to identify them!")
+    
+    celeb_file = st.file_uploader(
+        "Upload celebrity photo", 
+        type=["png", "jpg", "jpeg", "webp"],
+        key="celeb_uploader"
+    )
+    
+    if celeb_file:
+        celeb_image = Image.open(celeb_file).convert("RGB")
+        col1, col2 = st.columns([1, 1])
+        
+        with col1:
+            st.image(celeb_image, caption="Uploaded Image", use_container_width=True)
+            
+        with col2:
+            if st.button("✨ Identify Celebrity", type="primary"):
+                with st.spinner("Gemini is looking closely..."):
+                    try:
+                        start_time = time.time()
+                        # Initialize client with key from sidebar or env
+                        client = GeminiVLMClient(api_key=gemini_api_key if gemini_api_key else None)
+                        
+                        result = client.guess_celebrity(celeb_image)
+                        processing_time = time.time() - start_time
+                        
+                        st.markdown("#### 🆔 Identification Result")
+                        st.markdown(f"""
+                        <div class="success-box">
+                            <strong>Model:</strong> Gemini 2.5 Flash<br>
+                            <strong>Processing Time:</strong> {processing_time:.2f} seconds
+                        </div>
+                        """, unsafe_allow_html=True)
+                        
+                        st.markdown(result)
+                        
+                        # Save to history
+                        save_analysis_to_history(celeb_file.name, "Celebrity Identification", "Gemini 2.5 Flash", result, processing_time)
+                        
+                    except Exception as e:
+                        st.error(f"Identification failed: {str(e)}")
+                        st.info("Ensure you have provided a valid Gemini API Key in the sidebar.")
 
 st.markdown("---")
 st.markdown("""

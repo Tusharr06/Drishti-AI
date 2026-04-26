@@ -225,8 +225,21 @@ with st.sidebar:
             temperature = st.slider("Temperature", 0.0, 2.0, 0.2, step=0.05)
             
     with st.expander("🔑 API Configuration", expanded=False):
-        gemini_api_key = st.text_input("Gemini API Key", type="password", help="Enter your Google Gemini API Key")
-        if gemini_api_key:
+        # Check if key exists in secrets
+        secret_key = None
+        try:
+            secret_key = st.secrets["GEMINI_API_KEY"]
+            st.success("✅ Gemini API Key found in secrets!")
+        except:
+            pass
+            
+        gemini_api_key = st.text_input(
+            "Gemini API Key", 
+            value=secret_key if secret_key else "",
+            type="password", 
+            help="Enter your Google Gemini API Key"
+        )
+        if gemini_api_key and not secret_key:
             os.environ["GEMINI_API_KEY"] = gemini_api_key
     
     with st.expander("✨ Image Enhancement", expanded=False):

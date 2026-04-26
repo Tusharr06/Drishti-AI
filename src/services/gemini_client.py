@@ -2,16 +2,25 @@ import google.generativeai as genai
 import os
 from PIL import Image
 from dotenv import load_dotenv
+import streamlit as st
 
 load_dotenv()
 
 class GeminiVLMClient:
     def __init__(self, api_key=None):
-        self.api_key = api_key or os.getenv("GEMINI_API_KEY")
+        # Try to get API key from st.secrets, then env, then passed argument
+        self.api_key = api_key
+        
+        if not self.api_key:
+            try:
+                self.api_key = st.secrets["GEMINI_API_KEY"]
+            except:
+                self.api_key = os.getenv("GEMINI_API_KEY")
+        
         if self.api_key:
             genai.configure(api_key=self.api_key)
         else:
-            print("Warning: GEMINI_API_KEY not found in environment or passed to constructor")
+            print("Warning: GEMINI_API_KEY not found in secrets, env, or passed to constructor")
 
     def guess_celebrity(self, image: Image.Image) -> str:
         """
